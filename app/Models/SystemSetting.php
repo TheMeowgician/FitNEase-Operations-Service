@@ -79,7 +79,7 @@ class SystemSetting extends Model
         return 'string';
     }
 
-    private static function castValue($value, $type)
+    public static function castValue($value, $type)
     {
         switch ($type) {
             case 'boolean':
