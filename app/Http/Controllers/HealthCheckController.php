@@ -8,6 +8,7 @@ use GuzzleHttp\Client;
 use Exception;
 use Carbon\Carbon;
 use App\Models\APILog;
+use Illuminate\Support\Facades\Log;
 
 class HealthCheckController extends Controller
 {
