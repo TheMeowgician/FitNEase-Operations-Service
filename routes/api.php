@@ -13,6 +13,15 @@ Route::get('/user', function (Request $request) {
     return $request->user();
 })->middleware('auth:sanctum');
 
+// Health check endpoint for Docker
+Route::get('/health', function () {
+    return response()->json([
+        'status' => 'ok',
+        'service' => 'fitnease-operations',
+        'timestamp' => now()
+    ]);
+});
+
 Route::prefix('ops')->group(function () {
 
     // Audit & Logging Routes
