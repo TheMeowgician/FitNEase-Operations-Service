@@ -7,6 +7,7 @@ use App\Models\Report;
 use App\Models\APILog;
 use Illuminate\Http\JsonResponse;
 use Carbon\Carbon;
+use Illuminate\Support\Facades\Log;
 
 class ReportController extends Controller
 {
@@ -30,6 +31,15 @@ class ReportController extends Controller
             'report_type' => 'required|in:user_progress,system_analytics,workout_performance,group_activity,ml_performance,service_health',
             'parameters' => 'nullable|array',
             'file_format' => 'nullable|in:pdf,excel,csv,json'
+        ]);
+
+        // Log the report generation request
+        Log::info('Operations Service - Report generation requested', [
+            'report_name' => $validated['report_name'],
+            'report_type' => $validated['report_type'],
+            'file_format' => $validated['file_format'] ?? 'json',
+            'caller_service' => $request->header('X-Calling-Service', 'unknown'),
+            'requested_at' => now()
         ]);
 
         $reportData = $this->generateReportData($validated['report_type'], $validated['parameters'] ?? []);

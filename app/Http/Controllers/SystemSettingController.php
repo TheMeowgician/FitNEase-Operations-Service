@@ -6,6 +6,7 @@ use Illuminate\Http\Request;
 use App\Models\SystemSetting;
 use App\Models\AuditLog;
 use Illuminate\Http\JsonResponse;
+use Illuminate\Support\Facades\Log;
 
 class SystemSettingController extends Controller
 {
@@ -72,6 +73,14 @@ class SystemSettingController extends Controller
 
     public function getSettingsByCategory($category): JsonResponse
     {
+        // Log the category settings request for service communication monitoring
+        Log::info('Operations Service - Category settings requested', [
+            'category' => $category,
+            'endpoint' => '/ops/settings/category/' . $category,
+            'caller_service' => request()->header('X-Calling-Service', 'unknown'),
+            'requested_at' => now()
+        ]);
+
         $settings = SystemSetting::getSettingsByCategory($category);
 
         return response()->json([
@@ -83,6 +92,13 @@ class SystemSettingController extends Controller
 
     public function getPublicSettings(): JsonResponse
     {
+        // Log the public settings request for service communication monitoring
+        Log::info('Operations Service - Public settings requested', [
+            'endpoint' => '/ops/settings-public',
+            'caller_service' => request()->header('X-Calling-Service', 'unknown'),
+            'requested_at' => now()
+        ]);
+
         $settings = SystemSetting::getPublicSettings();
 
         return response()->json([

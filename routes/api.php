@@ -8,10 +8,13 @@ use App\Http\Controllers\ReportController;
 use App\Http\Controllers\SystemSettingController;
 use App\Http\Controllers\HealthCheckController;
 use App\Http\Controllers\AnalyticsController;
+use App\Http\Controllers\ServiceTestController;
+use App\Http\Controllers\ServiceCommunicationTestController;
+use App\Http\Controllers\ServiceIntegrationDemoController;
 
 Route::get('/user', function (Request $request) {
     return $request->user();
-})->middleware('auth:sanctum');
+})->middleware('auth.api');
 
 // Health check endpoint for Docker
 Route::get('/health', function () {
@@ -22,7 +25,24 @@ Route::get('/health', function () {
     ]);
 });
 
-Route::prefix('ops')->group(function () {
+// Service Communication Testing Routes (Protected)
+Route::middleware('auth.api')->group(function () {
+    Route::get('/test-services', [ServiceTestController::class, 'testServices']);
+    Route::get('/test-service/{serviceName}', [ServiceTestController::class, 'testSpecificService']);
+    Route::get('/service-test/communications', [ServiceCommunicationTestController::class, 'testIncomingCommunications']);
+    Route::get('/service-test/logs', [ServiceCommunicationTestController::class, 'getServiceLogs']);
+});
+
+// Service Integration Demo Routes (Public - No Auth Required)
+Route::prefix('demo')->group(function () {
+    Route::get('/integrations', [ServiceIntegrationDemoController::class, 'integrationsOverview']);
+    Route::get('/auth-service', [ServiceIntegrationDemoController::class, 'authServiceDemo']);
+    Route::get('/content-service', [ServiceIntegrationDemoController::class, 'contentServiceDemo']);
+    Route::get('/ml-service', [ServiceIntegrationDemoController::class, 'mlServiceDemo']);
+    Route::get('/business-intelligence', [ServiceIntegrationDemoController::class, 'businessIntelligenceDemo']);
+});
+
+Route::prefix('ops')->middleware('auth.api')->group(function () {
 
     // Audit & Logging Routes
     Route::post('/audit-log', [AuditLogController::class, 'store']);

@@ -25,6 +25,12 @@ class HealthCheckController extends Controller
 
     public function checkAllServicesHealth(): JsonResponse
     {
+        // Log the health check request for monitoring
+        Log::info('Operations Service - Health check requested', [
+            'requested_at' => now(),
+            'service' => 'fitnease-operations'
+        ]);
+
         $healthReport = [];
 
         foreach ($this->services as $serviceName => $envKey) {
@@ -40,12 +46,23 @@ class HealthCheckController extends Controller
             }
         }
 
+        $overallStatus = $this->calculateOverallHealth($healthReport);
+        $unhealthyServices = $this->getUnhealthyServices($healthReport);
+
+        // Log health check results
+        Log::info('Operations Service - Health check completed', [
+            'overall_status' => $overallStatus,
+            'total_services' => count($healthReport),
+            'unhealthy_count' => count($unhealthyServices),
+            'unhealthy_services' => $unhealthyServices
+        ]);
+
         return response()->json([
             'success' => true,
-            'overall_status' => $this->calculateOverallHealth($healthReport),
+            'overall_status' => $overallStatus,
             'services' => $healthReport,
             'timestamp' => now(),
-            'unhealthy_services' => $this->getUnhealthyServices($healthReport)
+            'unhealthy_services' => $unhealthyServices
         ]);
     }
 

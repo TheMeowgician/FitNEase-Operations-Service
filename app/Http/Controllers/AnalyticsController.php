@@ -9,6 +9,7 @@ use Carbon\Carbon;
 use App\Models\APILog;
 use App\Models\Report;
 use Exception;
+use Illuminate\Support\Facades\Log;
 
 class AnalyticsController extends Controller
 {
@@ -16,6 +17,14 @@ class AnalyticsController extends Controller
     {
         $dateRange = $request->get('days', 30);
         $startDate = Carbon::now()->subDays($dateRange);
+
+        // Log the business metrics request
+        Log::info('Operations Service - Business metrics requested', [
+            'period_days' => $dateRange,
+            'start_date' => $startDate->toDateString(),
+            'caller_service' => $request->header('X-Calling-Service', 'unknown'),
+            'requested_at' => now()
+        ]);
 
         $metrics = [
             'user_metrics' => $this->getUserMetrics($startDate),
@@ -80,6 +89,12 @@ class AnalyticsController extends Controller
 
     public function generateSystemPerformanceReport(): JsonResponse
     {
+        // Log the system performance report generation
+        Log::info('Operations Service - System performance report generation requested', [
+            'report_type' => 'system_performance',
+            'period' => '30_days',
+            'generated_at' => now()
+        ]);
         $report = [
             'report_info' => [
                 'type' => 'system_performance',

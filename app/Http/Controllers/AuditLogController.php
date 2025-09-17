@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use Illuminate\Http\Request;
 use App\Models\AuditLog;
 use Illuminate\Http\JsonResponse;
+use Illuminate\Support\Facades\Log;
 
 class AuditLogController extends Controller
 {
@@ -20,8 +21,11 @@ class AuditLogController extends Controller
             'user_id' => 'nullable|integer'
         ]);
 
+        // Get user ID from middleware if not provided
+        $userId = $validated['user_id'] ?? $request->attributes->get('user_id');
+
         $auditLog = AuditLog::create([
-            'user_id' => $validated['user_id'] ?? auth()->id(),
+            'user_id' => $userId,
             'action_type' => $validated['action_type'],
             'table_name' => $validated['table_name'],
             'record_id' => $validated['record_id'],
@@ -31,6 +35,15 @@ class AuditLogController extends Controller
             'user_agent' => $request->userAgent(),
             'service_name' => $validated['service_name'] ?? 'fitneaseops',
             'timestamp' => now()
+        ]);
+
+        // Log the service communication
+        Log::info('Audit log created via service communication', [
+            'audit_log_id' => $auditLog->log_id,
+            'user_id' => $userId,
+            'action_type' => $validated['action_type'],
+            'service_name' => $validated['service_name'] ?? 'fitneaseops',
+            'caller_service' => $request->header('X-Calling-Service', 'unknown')
         ]);
 
         return response()->json([

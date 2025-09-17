@@ -6,6 +6,7 @@ use Illuminate\Http\Request;
 use App\Models\APILog;
 use Illuminate\Http\JsonResponse;
 use Carbon\Carbon;
+use Illuminate\Support\Facades\Log;
 
 class APILogController extends Controller
 {
@@ -38,6 +39,17 @@ class APILogController extends Controller
             'timestamp' => now()
         ]);
 
+        // Log the service communication
+        Log::info('Operations Service - API log created via service communication', [
+            'api_log_id' => $apiLog->log_id,
+            'endpoint' => $validated['endpoint'],
+            'service_from' => $validated['service_from'],
+            'service_to' => $validated['service_to'],
+            'status_code' => $validated['status_code'],
+            'response_time_ms' => $validated['response_time_ms'],
+            'caller_service' => $request->header('X-Calling-Service', 'unknown')
+        ]);
+
         return response()->json([
             'success' => true,
             'message' => 'API log created successfully',
@@ -49,6 +61,14 @@ class APILogController extends Controller
     {
         $days = $request->get('days', 30);
         $service = $request->get('service');
+
+        // Log the performance metrics request
+        Log::info('Operations Service - Performance metrics requested', [
+            'days' => $days,
+            'service_filter' => $service,
+            'caller_service' => $request->header('X-Calling-Service', 'unknown'),
+            'requested_at' => now()
+        ]);
 
         $query = APILog::where('timestamp', '>=', Carbon::now()->subDays($days));
 
