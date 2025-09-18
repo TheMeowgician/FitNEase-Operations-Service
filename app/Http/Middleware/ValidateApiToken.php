@@ -63,10 +63,10 @@ class ValidateApiToken
 
                 // Store user data in request attributes for controllers
                 $request->attributes->set('user', $userData);
-                $request->attributes->set('user_id', $userData['id'] ?? null);
+                $request->attributes->set('user_id', $userData['user_id'] ?? null);
 
                 Log::info('Token validation successful', [
-                    'user_id' => $userData['id'] ?? 'unknown',
+                    'user_id' => $userData['user_id'] ?? 'unknown',
                     'service' => 'fitnease-operations'
                 ]);
 
